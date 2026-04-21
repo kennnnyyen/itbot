@@ -252,7 +252,7 @@ try {
   failed++;
 }
 
-const BASE = `http://127.0.0.1:${PORT}/__openclaw__/api`;
+const BASE = `http://127.0.0.1:${PORT}/api`;
 
 /** Convenience wrapper */
 async function api(method, path, body, headers = {}) {
@@ -505,4 +505,6 @@ console.log(
 );
 if (failed > 0) {
   process.exit(1);
+} else {
+  process.exit(0);
 }

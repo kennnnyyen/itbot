@@ -7,12 +7,16 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "node build.js",
-    "build:dev": "API_BASE=http://localhost:3001/__openclaw__/api node build.js"
+    "build:dev": "API_BASE=http://127.0.0.1:3001/api node build.js"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "type": "module",
+  "dependencies": {
+    "cors": "^2.8.6",
+    "express": "^5.2.1"
+  },
   "devDependencies": {
     "esbuild": "^0.28.0"
   }

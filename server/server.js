@@ -143,7 +143,9 @@ function generateOpening(answers, routing, firstName) {
   return `${greeting}${firstLine}\n\n${needPara}\n\n${question}`;
 }
 
-app.use(cors({ origin: ALLOWED_ORIGIN }));
+// On Vercel the widget and API share the same origin — CORS is not needed.
+// For local dev ALLOWED_ORIGIN restricts to the dev server.
+app.use(cors({ origin: process.env.VERCEL ? '*' : ALLOWED_ORIGIN }));
 app.use(express.json());
 
 // Validate onboarding enum values before forwarding to the agent
@@ -160,7 +162,7 @@ const ALLOWED = {
 // Now accepts username + firstName from the <script> data-* attributes.
 // Identity comes from the authenticated WordPress page — not from within the widget.
 
-app.post('/__openclaw__/api/onboard', async (req, res) => {
+app.post('/api/onboard', async (req, res) => {
   const { username, firstName, answers } = req.body ?? {};
 
   if (!username || !USERNAME_RE.test(username)) {
@@ -207,7 +209,7 @@ app.post('/__openclaw__/api/onboard', async (req, res) => {
 // Agent chain is hardcoded server-side — client never supplies agentId.
 // Chain: context-classifier → crisis-monitor (parallel) → diagnostic-educator
 
-app.post('/__openclaw__/api/chat', async (req, res) => {
+app.post('/api/chat', async (req, res) => {
   const { sessionId, message } = req.body ?? {};
   const session = sessions.get(sessionId);
   if (!session) return res.status(404).json({ error: 'Session not found' });
@@ -259,7 +261,7 @@ const ALLOWED_SOMATIC   = ['calm','lighter','still-activated','grounded','no-shi
 const ALLOWED_RETURN    = ['ongoing-support','deeper-work','not-sure'];
 const ALLOWED_REMINDER  = ['2w','1m','6w','none'];
 
-app.post('/__openclaw__/api/exit', (req, res) => {
+app.post('/api/exit', (req, res) => {
   const { sessionId, exitInsight, somaticShift, exitTakeaway, returnPreference, reminderInterval } = req.body ?? {};
   const session = sessions.get(sessionId);
   if (!session) return res.status(404).json({ error: 'Session not found' });
@@ -277,7 +279,7 @@ app.post('/__openclaw__/api/exit', (req, res) => {
 
 // ── Returning user ─────────────────────────────────────────────────────────────
 
-app.get('/__openclaw__/api/returning', (req, res) => {
+app.get('/api/returning', (req, res) => {
   // In dev: always 404 — no persistent store. Production lookup is in Step 1.4d (SQLite).
   res.status(404).json({ error: 'Not found' });
 });
@@ -319,6 +321,12 @@ function countExitSignals(session, latestMessage, turnCount) {
   return count;
 }
 
-app.listen(PORT, '127.0.0.1', () => {
-  console.log(`IT session server listening on http://127.0.0.1:${PORT}`);
-});
+// Export app for Vercel serverless handler (api/index.js).
+// app.listen is only called in local dev — Vercel manages its own HTTP server.
+export default app;
+
+if (!process.env.VERCEL) {
+  app.listen(PORT, '127.0.0.1', () => {
+    console.log(`IT session server listening on http://127.0.0.1:${PORT}`);
+  });
+}

@@ -9,7 +9,7 @@ await esbuild.build({
   format: 'iife',
   globalName: 'ITSurvivorBot',
   define: {
-    'process.env.API_BASE': JSON.stringify(process.env.API_BASE ?? 'https://api.illuminationtransformation.org/__openclaw__/api'),
+    'process.env.API_BASE': JSON.stringify(process.env.API_BASE ?? '/api'),
   },
   loader: { '.css': 'text' },   // inlines widget.css as a string
 });
