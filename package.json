@@ -1,0 +1,19 @@
+{
+  "name": "it-widget",
+  "": "",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "node build.js",
+    "build:dev": "API_BASE=http://localhost:3001/__openclaw__/api node build.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "devDependencies": {
+    "esbuild": "^0.28.0"
+  }
+}
