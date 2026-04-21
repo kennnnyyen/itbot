@@ -8,7 +8,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "node build.js",
     "build:dev": "API_BASE=http://127.0.0.1:3001/api node build.js",
-    "build:prod": "API_BASE=https://yathss-mac-mini.tail43e16d.ts.net/api node build.js"
+    "build:prod": "API_BASE=https://vol-light-policies-governmental.trycloudflare.com/api node build.js"
   },
   "keywords": [],
   "author": "",
