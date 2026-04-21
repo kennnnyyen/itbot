@@ -5,7 +5,7 @@ await esbuild.build({
   entryPoints: ['src/index.js'],
   bundle: true,
   minify: true,
-  outfile: 'dist/it-survivor-bot.js',
+  outfile: 'public/dist/it-survivor-bot.js',
   format: 'iife',
   globalName: 'ITSurvivorBot',
   define: {
