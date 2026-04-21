@@ -4,10 +4,11 @@ import cors from 'cors';
 const app = express();
 const PORT = process.env.PORT ?? 3001;
 const OPENCLAW_BASE = process.env.OPENCLAW_BASE ?? 'http://127.0.0.1:18789';
-const OPENCLAW_TOKEN = process.env.OPENCLAW_TOKEN;
+// OPENCLAW_TOKEN is only required when /chat is called. Missing token → 503 on chat,
+// but /onboard, /exit, /returning all work without it.
+const OPENCLAW_TOKEN = process.env.OPENCLAW_TOKEN ?? null;
 if (!OPENCLAW_TOKEN) {
-  console.error('FATAL: OPENCLAW_TOKEN environment variable is not set. Refusing to start.');
-  process.exit(1);
+  console.warn('WARNING: OPENCLAW_TOKEN is not set. /api/chat will return 503.');
 }
 
 const ALLOWED_ORIGIN = process.env.ALLOWED_ORIGIN ?? 'http://localhost:3000';
@@ -284,10 +285,23 @@ app.get('/api/returning', (req, res) => {
   res.status(404).json({ error: 'Not found' });
 });
 
+// ── Health check ─────────────────────────────────────────────────────────────
+
+app.get('/api/health', (req, res) => {
+  res.json({
+    ok: true,
+    openclaw: OPENCLAW_TOKEN ? 'configured' : 'MISSING — /api/chat will fail',
+    sessions: sessions.size,
+  });
+});
+
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 // Wraps the OpenClaw /v1/chat/completions endpoint for a given agent ID.
 async function callAgent(agentId, { messages, context }) {
+  if (!OPENCLAW_TOKEN) {
+    throw new Error('OPENCLAW_TOKEN is not configured on this server. Set it in Vercel environment variables.');
+  }
   // Inject context as a system message prepended to the conversation.
   const systemContent = `Context: ${JSON.stringify(context)}`;
   const fullMessages = [{ role: 'system', content: systemContent }, ...messages];
