@@ -313,6 +313,12 @@ async function callAgent(agentId, { messages, context }) {
   if (!OPENCLAW_TOKEN) {
     throw new Error('OPENCLAW_TOKEN is not configured on this server. Set it in Vercel environment variables.');
   }
+
+  const isStubMode = OPENCLAW_TOKEN === 'placeholder';
+  if (isStubMode) {
+    const last = messages.filter(m => m.role === 'user').pop()?.content ?? '';
+    return `[OpenClaw not connected — stub reply] You said: "${last}". Once OPENCLAW_TOKEN is set to a real token and OpenClaw is running, responses will come from the diagnostic-educator agent.`;
+  }
   // Inject context as a system message prepended to the conversation.
   const systemContent = `Context: ${JSON.stringify(context)}`;
   const fullMessages = [{ role: 'system', content: systemContent }, ...messages];
