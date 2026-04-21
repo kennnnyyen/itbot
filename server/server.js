@@ -11,8 +11,6 @@ if (!OPENCLAW_TOKEN) {
   console.warn('WARNING: OPENCLAW_TOKEN is not set. /api/chat will return 503.');
 }
 
-const ALLOWED_ORIGIN = process.env.ALLOWED_ORIGIN ?? 'http://localhost:3000';
-
 // Safe-char validation for usernames passed via data-* attribute
 const USERNAME_RE = /^[a-zA-Z0-9._-]{1,100}$/;
 
@@ -144,9 +142,22 @@ function generateOpening(answers, routing, firstName) {
   return `${greeting}${firstLine}\n\n${needPara}\n\n${question}`;
 }
 
-// On Vercel the widget and API share the same origin — CORS is not needed.
-// For local dev ALLOWED_ORIGIN restricts to the dev server.
-app.use(cors({ origin: process.env.VERCEL ? '*' : ALLOWED_ORIGIN }));
+// ALLOWED_ORIGINS: comma-separated list of allowed origins.
+// Production: set to your Vercel URL, e.g. https://itbot-kappa.vercel.app
+// Local dev: defaults to localhost
+const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS ?? process.env.ALLOWED_ORIGIN ?? 'http://localhost:3000')
+  .split(',').map(s => s.trim()).filter(Boolean);
+
+app.use(cors({
+  origin: (origin, cb) => {
+    // Allow requests with no origin (curl, same-origin) and any listed origin
+    if (!origin || ALLOWED_ORIGINS.includes(origin) || ALLOWED_ORIGINS.includes('*')) {
+      cb(null, true);
+    } else {
+      cb(new Error(`CORS: origin ${origin} not allowed`));
+    }
+  },
+}));
 app.use(express.json());
 
 // Validate onboarding enum values before forwarding to the agent
