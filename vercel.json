@@ -1,3 +1,9 @@
 {
-  "outputDirectory": "public"
+  "outputDirectory": "public",
+  "rewrites": [
+    {
+      "source": "/api/:path*",
+      "destination": "https://yathss-mac-mini.tail43e16d.ts.net/api/:path*"
+    }
+  ]
 }
